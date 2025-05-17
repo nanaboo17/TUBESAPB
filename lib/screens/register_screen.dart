@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -46,77 +47,36 @@ class _RegisterScreenState extends State<RegisterScreen>
     final username = _usernameController.text.trim();
 
     try {
-      // Check if the user already exists by signing in or checking for an existing user
-      final response = await Supabase.instance.client.auth.signUp(
-        email: email,
-        password: password,
-      );
+      // Register user with Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
-      final user = response.user;
-
+      final user = userCredential.user;
       if (user != null) {
-        // If user exists, just proceed with inserting the profile
-        print('Existing User ID: ${user.id}');
-
-        // Insert profile
-        final insertResponse = await Supabase.instance.client
-            .from('profiles')
-            .insert({
-          'id': user.id,  // Use the existing user.id
+        // Save additional user info in Firestore
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'username': username,
+          'email': email,
           'created_at': DateTime.now().toIso8601String(),
-        }).execute();
-
-        if (insertResponse.error != null) {
-          print('Insert Error: ${insertResponse.error!.message}');
-        } else {
-          print('User profile inserted successfully');
-        }
-      } else {
-        // If user doesn't exist, proceed with sign up
-        final signUpResponse = await Supabase.instance.client.auth.signUp(
-          email: email,
-          password: password,
-        );
-
-        final newUser = signUpResponse.user;
-
-        if (newUser != null) {
-          print('New User ID: ${newUser.id}');
-
-          // Insert profile for the new user
-          final insertResponse = await Supabase.instance.client
-              .from('profiles')
-              .insert({
-            'id': newUser.id,
-            'username': username,
-            'created_at': DateTime.now().toIso8601String(),
-          }).execute();
-
-          if (insertResponse.error != null) {
-            print('Insert Error: ${insertResponse.error!.message}');
-          } else {
-            print('User profile inserted');
-          }
-        } else {
-          print('User sign-up failed');
-        }
+        });
+        print("Registrasi dan penyimpanan data berhasil");
       }
+    } on FirebaseAuthException catch (e) {
+      String message = "Terjadi kesalahan";
+      print('Error: $e');
+
+      if (e.code == 'email-already-in-use') {
+        message = "Email sudah digunakan";
+      } else if (e.code == 'weak-password') {
+        message = "Password terlalu lemah";
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } catch (e) {
-      // Handle any errors that occur during registration
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal daftar: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       setState(() => _isLoading = false);
     }
   }
-
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -258,8 +218,4 @@ class _RegisterScreenState extends State<RegisterScreen>
       ),
     );
   }
-}
-
-extension on PostgrestResponse {
-  get error => null;
 }

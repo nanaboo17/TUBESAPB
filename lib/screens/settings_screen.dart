@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:tubes/models/user_profile.dart';
-import 'package:tubes/screens/settings/change_password_screen.dart';
+import 'package:tubes/screens/home_screen.dart';
+import 'package:tubes/screens/favourite_screen.dart';
+import 'package:tubes/screens/settings_screen.dart';
 import 'package:tubes/screens/settings/edit_profile_screen.dart';
+import 'package:tubes/screens/settings/change_password_screen.dart';
+import 'package:tubes/screens/transaction_screen.dart'; // Assuming you have this screen
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -11,15 +14,39 @@ class SettingsScreen extends StatefulWidget {
   _SettingsScreenState createState() => _SettingsScreenState();
 }
 
-
-class _SettingsScreenState extends State<SettingsScreen>{
-
-  UserProfile? profile;
+class _SettingsScreenState extends State<SettingsScreen> {
+  int _selectedIndex = 3; // Index for the current screen in the bottom navigation bar
 
   void _reloadProfileData() {
     setState(() {
-
+      // Code to reload profile data goes here
     });
+  }
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    // Navigate to the appropriate screen based on the index
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomeScreen()));
+        break;
+      case 1:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => TransactionScreen()));
+        break;
+      case 2:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => FavouriteScreen()));
+        break;
+      case 3:
+      // Stay on SettingsScreen
+        break;
+      default:
+        break;
+    }
   }
 
   @override
@@ -38,8 +65,12 @@ class _SettingsScreenState extends State<SettingsScreen>{
           ),
         ),
         centerTitle: true,
-        leading: IconButton(onPressed: () {Navigator.pop(context);
-          }, icon: Icon(Icons.arrow_back)),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -62,16 +93,17 @@ class _SettingsScreenState extends State<SettingsScreen>{
             SettingsTile(
               title: 'Edit Profile',
               onTap: () {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EditProfileScreen()),);
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => const EditProfileScreen()));
               },
             ),
             SettingsTile(
               title: 'Ubah Sandi',
               onTap: () {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),);
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => const ChangePasswordScreen()));
               },
             ),
-
             const SizedBox(height: 24),
 
             // Aksi Lain Section
@@ -96,14 +128,12 @@ class _SettingsScreenState extends State<SettingsScreen>{
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3,
+        currentIndex: _selectedIndex,
         backgroundColor: Colors.brown,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          // TODO: Navigate to the tapped screen
-        },
+        onTap: _onTabTapped, // Using _onTabTapped to manage navigation
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Transaction'),

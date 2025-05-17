@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import '../settings_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:tubes/screens/settings_screen.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -35,12 +35,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
         centerTitle: true,
         leading: IconButton(
-    onPressed: () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => SettingsScreen()),
-      );
-    },
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => SettingsScreen()),
+            );
+          },
           icon: const Icon(Icons.arrow_back),
         ),
       ),

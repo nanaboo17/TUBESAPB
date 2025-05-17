@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:tubes/screens/home_screen.dart';
+import 'transaction_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tubes/screens/home_screen.dart'; // Example, add your actual screens
-import 'package:tubes/screens/transaction_screen.dart';
-import 'package:tubes/screens/settings_screen.dart';
+import 'package:tubes/screens/settings/edit_profile_screen.dart';
+import 'package:tubes/screens/home_screen.dart'; // Assuming HomeScreen is another screen widget
+import 'package:tubes/screens/favourite_screen.dart'; // Assuming FavouriteScreen is another screen widget
+import 'package:tubes/screens/settings_screen.dart'; // Assuming SettingsScreen is another screen widget
 
 class FavouriteScreen extends StatefulWidget {
   const FavouriteScreen({super.key});
@@ -33,6 +36,12 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       });
     }
   }
+
+  void _saveSingleNote(int index) async {
+    final note = favouriteSchedules[index]['note'] ?? '';
+    await prefs.setString('note_$index', note);
+  }
+
 
   void _saveNotes() async {
     for (int i = 0; i < favouriteSchedules.length; i++) {
@@ -337,11 +346,10 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                 const SizedBox(width: 4),
                 GestureDetector(
                   onTap: () {
-                    _saveNotes(); // Save the note after editing
-                    // Toggle saved status
                     setState(() {
                       schedule['note'] = noteControllers[index]!.text;
                     });
+                    _saveSingleNote(index);
                   },
                   child: const Icon(Icons.edit, size: 16),
                 ),
@@ -360,3 +368,4 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
     );
   }
 }
+

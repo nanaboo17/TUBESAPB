@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
+    _checkLoginStatus();
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -30,6 +30,17 @@ class _LoginScreenState extends State<LoginScreen>
     _fadeAnim = Tween<double>(begin: 0, end: 1).animate(_animController);
     _animController.forward();
   }
+
+  void _checkLoginStatus() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // User sudah login, langsung ke home
+      Future.microtask(() {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
+    }
+  }
+
 
   @override
   void dispose() {
@@ -47,26 +58,36 @@ class _LoginScreenState extends State<LoginScreen>
     final password = _passwordController.text.trim();
 
     try {
-      final response = await Supabase.instance.client.auth.signInWithPassword(
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      if (response.user != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Berhasil login')));
-        // Navigasi ke halaman home misalnya:
-        Navigator.pushReplacementNamed(context, '/home');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Berhasil login')),
+      );
+
+      Navigator.pushReplacementNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      String message = 'Gagal login: ${e.message}';
+      if (e.code == 'user-not-found') {
+        message = 'Email tidak ditemukan';
+      } else if (e.code == 'wrong-password') {
+        message = 'Password salah';
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal login: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Terjadi kesalahan: $e')),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

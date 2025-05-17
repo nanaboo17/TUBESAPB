@@ -22,8 +22,8 @@ class Schedule {
 });
   factory Schedule.fromJson(Map<String, dynamic> json) => Schedule(
       scheduleId: json['schedule_id'],
-      from: json['from'],
-      to: json['to'],
+      from: json['from'] ?? json['from_location'],
+      to: json['to'] ?? json['to_location'],
       date: DateTime.parse(json['date']),
       time: json['time'],
       type: json['type'],
@@ -33,8 +33,8 @@ class Schedule {
 
   Map<String, dynamic> toJson() => {
     'schedule_id' : scheduleId,
-    'from' : from,
-    'to' : to,
+    'from_location' : from,
+    'to_location' : to,
     'date' : date.toIso8601String(),
     'time' : time,
     'type' : type,
@@ -42,4 +42,17 @@ class Schedule {
     'price' : price,
     'tickets_available' : ticketsAvailable,
   };
+
+  Map<String, dynamic> toDbJson() => {
+    'schedule_id': scheduleId,
+    'from_location': from,
+    'to_location': to,
+    'date': date.toIso8601String(),
+    'time': time,
+    'type': type,
+    'note': note,
+    'price': price,
+    'tickets_available': ticketsAvailable,
+  };
+
 }
